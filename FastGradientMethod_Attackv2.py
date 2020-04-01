@@ -109,45 +109,47 @@ accuracy_adv = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test_adv, ax
 print("Accuracy on adversarial test examples: {}%".format(accuracy_adv * 100))
 
 
+
 # Step 8: Plot Results
-fig = plt.figure(figsize=(16, 16))
-fig.suptitle('Adversarial Attack On Victim Model', fontsize=24, fontweight='bold')
-columns = 2
-rows = 7
-ax = []
+for ind in range(0, 100, 5):
+    fig = plt.figure(figsize=(16, 16))
+    fig.suptitle('Adversarial Attack On Victim Model', fontsize=24, fontweight='bold')
+    columns = 2
+    rows = 7
+    ax = []
 
-ax.append(fig.add_subplot(rows, columns, 1))
-plt.text(0.38, 0.1, 'Original Image', fontsize=16, fontweight='bold')
-plt.axis('off')
+    ax.append(fig.add_subplot(rows, columns, 1))
+    plt.text(0.38, 0.1, 'Original Image', fontsize=16, fontweight='bold')
+    plt.axis('off')
 
-ax.append(fig.add_subplot(rows, columns, 2))
-plt.text(0.35, 0.1, 'Adversarial Image', fontsize=16, fontweight='bold')
-plt.axis('off')
+    ax.append(fig.add_subplot(rows, columns, 2))
+    plt.text(0.35, 0.1, 'Adversarial Image', fontsize=16, fontweight='bold')
+    plt.axis('off')
 
-imageindex = 0
-for i in range(2, columns*rows - 2):
-    if (i % 2 == 0):
-        sample_pre = x_test_adv_pre[ imageindex, :]
-        ax.append( fig.add_subplot(rows, columns, i + 1) )
-        label_pre = np.argmax(classifier.predict(sample_pre.reshape((1, sample_pre.shape[0], sample_pre.shape[1], sample_pre.shape[2]))))
-        plt.text(33, 18, 'Data:\nTrue Label = %d\nClassifier Predicted Label = %d' % (np.argmax(y_test_adv[imageindex]), label_pre))
-        plt.imshow(sample_pre)
-    else:
-        sample_post = x_test_adv[ imageindex, :]
-        ax.append( fig.add_subplot(rows, columns, i + 1) )
-        label_post = np.argmax(classifier.predict(sample_post.reshape((1, sample_post.shape[0], sample_post.shape[1], sample_post.shape[2]))))
-        plt.text(33, 18, 'Data:\nTrue Label = %d\nClassifier Predicted Label = %d' % (np.argmax(y_test_adv[imageindex]), label_post))
-        plt.imshow(sample_post)
-        imageindex = imageindex + 1
+    imageindex = ind
+    for i in range(2, columns*rows - 2):
+        if (i % 2 == 0):
+            sample_pre = x_test_adv_pre[ imageindex, :]
+            ax.append( fig.add_subplot(rows, columns, i + 1) )
+            label_pre = np.argmax(classifier.predict(sample_pre.reshape((1, sample_pre.shape[0], sample_pre.shape[1], sample_pre.shape[2]))))
+            plt.text(33, 18, 'Data:\nTrue Label = %d\nClassifier Predicted Label = %d' % (np.argmax(y_test_adv[imageindex]), label_pre))
+            plt.imshow(sample_pre)
+        else:
+            sample_post = x_test_adv[ imageindex, :]
+            ax.append( fig.add_subplot(rows, columns, i + 1) )
+            label_post = np.argmax(classifier.predict(sample_post.reshape((1, sample_post.shape[0], sample_post.shape[1], sample_post.shape[2]))))
+            plt.text(33, 18, 'Data:\nTrue Label = %d\nClassifier Predicted Label = %d' % (np.argmax(y_test_adv[imageindex]), label_post))
+            plt.imshow(sample_post)
+            imageindex = imageindex + 1
 
-ax.append(fig.add_subplot(rows, columns, 13))
-plt.text(0.3, 0.5, "Accuracy on benign test examples: {}%".format(accuracy_benign * 100), fontsize=10, fontweight='bold')
-plt.axis('off')
+    ax.append(fig.add_subplot(rows, columns, 13))
+    plt.text(0.3, 0.5, "Accuracy on benign test examples: {}%".format(accuracy_benign * 100), fontsize=10, fontweight='bold')
+    plt.axis('off')
 
-ax.append(fig.add_subplot(rows, columns, 14))
-plt.text(0.3, 0.5, "Accuracy on benign test examples: {}%".format(accuracy_adv * 100), fontsize=10, fontweight='bold')
-plt.axis('off')
+    ax.append(fig.add_subplot(rows, columns, 14))
+    plt.text(0.3, 0.5, "Accuracy on benign test examples: {}%".format(accuracy_adv * 100), fontsize=10, fontweight='bold')
+    plt.axis('off')
 
-fig.tight_layout(h_pad=4.0, w_pad=4.0)
-plt.show()
+    fig.tight_layout(h_pad=4.0, w_pad=4.0)
+    plt.show()
 
