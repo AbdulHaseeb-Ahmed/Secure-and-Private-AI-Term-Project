@@ -1,5 +1,5 @@
 # Secure-and-Private-AI-Term-Project
-- These versions all use a composed CNN model based on the CIFAR-10 dataset to classify images:
+- These versions all use a self-composed CNN model based on the CIFAR-10 dataset to classify images:
   - FGSM_v1: A basic version of the FGSM attack. Just attacks 100 instances with 10 instances from each class. 
     - Shows just one instance of the attack vs the original example
   - FGSM_v2: Similar to v1 but now is incorporated with visual representation of attacks versus the original image. 
