@@ -57,7 +57,6 @@ x_test_adv_pre, y_test_adv = exract_ten_classes( x_test, y_test ) # call the abo
 print("x_test_adv_pre shape: " + str(x_test_adv_pre.shape) + "\n" + "x_test_adv_pre size: " + str(x_test_adv_pre.size) + "\n" + # print statement just shows what the extracted set looks like
       "y_test_adv_pre shape: " + str(y_test_adv.shape) + "\n" + "y_test_adv_pre size: " + str(y_test_adv.size) + "\n")
 
-""" DONT WORRY ABOUT THIS RIGHT NOW, ITS JUST A VISUALIZATION
 # picking a test sample before generating adversarial examples
 sample_pre = x_test_adv_pre[ 1, :]
 print( sample_pre.shape )
@@ -67,14 +66,13 @@ plt.show( )
 print("Label = " + str(np.argmax(y_test_adv[1])))
 label_pre = np.argmax(classifier.predict( sample_pre.reshape( (1, sample_pre.shape[ 0 ], sample_pre.shape[ 1 ], sample_pre.shape[ 2 ]) ) ) )
 print( 'class prediction for the test sample_pre:', label_pre )
-"""
+
 
 
 # Step 5: Generate adversarial test examples
-attack = FastGradientMethod(classifier=classifier, eps=0.05) # Call the attack function and pass it the victim classifier, and for FGSM set the epsilon value
+attack = FastGradientMethod(classifier=classifier, eps=0.5) # Call the attack function and pass it the victim classifier, and for FGSM set the epsilon value
 x_test_adv = attack.generate(x=x_test_adv_pre) # generate the adversarial examples from our extracted set. Creates 100 adversarial examples
 
-""" DONT WORRY ABOUT THIS RIGHT NOW, ITS JUST A VISUALIZATION
 # picking a test sample after generating adversarial examples
 sample_post = x_test_adv[ 1, :]
 print( sample_post.shape )
@@ -84,7 +82,7 @@ plt.show( )
 print("Label = " + str(np.argmax(y_test_adv[1])))
 label_post = np.argmax(classifier.predict( sample_post.reshape( (1, sample_post.shape[ 0 ], sample_post.shape[ 1 ], sample_post.shape[ 2 ]) ) ) )
 print( 'class prediction for the test sample_post:', label_post )
-"""
+
 
 
 # Step 6: Evaluate the ART classifier on adversarial test examples

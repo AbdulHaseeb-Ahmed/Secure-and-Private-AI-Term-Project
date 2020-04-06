@@ -42,7 +42,7 @@ def exract_ten_classes( data, labels, classes=(0,1,2,3,4,5,6,7,8,9), no_instance
     x_pre = []
     y_pre = []
     for class_label in range(0, 10):
-        index = random.randint(0, 500)
+        index = random.randint(0, 1000)
         iteration = no_instance
         while (iteration != 0):
             if np.argmax(labels[index]) == classes[class_label]:
@@ -51,18 +51,15 @@ def exract_ten_classes( data, labels, classes=(0,1,2,3,4,5,6,7,8,9), no_instance
                 iteration = iteration - 1
             index = index + 1
     x = np.asarray(x_pre)
-    y = np.asarray(y_pre)
+    y = keras.utils.to_categorical(np.asarray(y_pre), 10)
     return x, y
 
 x_test_adv_pre, y_test_adv = exract_ten_classes( x_test, y_test )
-y_test_adv = keras.utils.to_categorical( y_test_adv, 10 )
-print("x_test_adv_pre shape: " + str(x_test_adv_pre.shape) + "\n" + "x_test_adv_pre size: " + str(x_test_adv_pre.size) + "\n" +
-      "y_test_adv_pre shape: " + str(y_test_adv.shape) + "\n" + "y_test_adv_pre size: " + str(y_test_adv.size) + "\n")
 
 
 
 # Step 5: Generate adversarial test examples
-attack = FastGradientMethod(classifier=classifier, eps=0.05)
+attack = FastGradientMethod(classifier=classifier, eps=0.5)
 x_test_adv = attack.generate(x=x_test_adv_pre)
 
 
@@ -116,3 +113,4 @@ for ind in range(0, 100, 5):
 
     fig.tight_layout(h_pad=4.0, w_pad=4.0)
     plt.show()
+

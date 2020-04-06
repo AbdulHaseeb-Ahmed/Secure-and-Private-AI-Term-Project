@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import keras
-from keras.models import Sequential
-from keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Activation, Dropout
 import numpy as np
 import matplotlib.pyplot as plt
 from art.attacks import FastGradientMethod
@@ -9,61 +7,37 @@ from art.classifiers import KerasClassifier
 from art.utils import load_dataset
 import random
 
+import tensorflow as tf
+import tensorflow_hub as hub
+tf.compat.v1.disable_eager_execution()
 
-# Step 1: Load the CIFAR 10 dataset
+
+
+# Step 1: Load the CIFAR-10 Dataset
 (x_train, y_train), (x_test, y_test), min_, max_ = load_dataset(str("cifar10")) # Original Dataset
 print("x_train shape: " + str(x_train.shape) + "\n" + "x_train size: " + str(x_train.size) + "\n" +
       "y_train shape: " + str(y_train.shape) + "\n" + "y_train size: " + str(y_train.size) + "\n" +
       "x_test shape: " + str(x_test.shape) + "\n" + "x_test size: " + str(x_test.size) + "\n" +
       "y_test shape: " + str(y_test.shape) + "\n" + "y_test size: " + str(y_test.size) + "\n")
-
-    # Sampled dataset to train model
-x_train, y_train = x_train[:5000], y_train[:5000] # take 5000 samples for the training set
-x_test, y_test = x_test[:10000], y_test[:10000] # take 1000 samples for the testing set
-print("x_train shape: " + str(x_train.shape) + "\n" + "x_train size: " + str(x_train.size) + "\n" +
-      "y_train shape: " + str(y_train.shape) + "\n" + "y_train size: " + str(y_train.size) + "\n" +
-      "x_test shape: " + str(x_test.shape) + "\n" + "x_test size: " + str(x_test.size) + "\n" +
-      "y_test shape: " + str(y_test.shape) + "\n" + "y_test size: " + str(y_test.size) + "\n")
+print()
 
 
-# Step 2: Create the model
-model = Sequential()
-model.add(Conv2D(32, (3, 3), padding="same", input_shape=x_train.shape[1:]))
-model.add(Activation("relu"))
-model.add(Conv2D(32, (3, 3)))
-model.add(Activation("relu"))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
 
-model.add(Conv2D(64, (3, 3), padding="same"))
-model.add(Activation("relu"))
-model.add(Conv2D(64, (3, 3)))
-model.add(Activation("relu"))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
-
-model.add(Flatten())
-model.add(Dense(512))
-model.add(Activation("relu"))
-model.add(Dropout(0.5))
-model.add(Dense(10))
-model.add(Activation("softmax"))
-
-model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
+# Step 2: Load the victim model
+classifier_url ="https://tfhub.dev/deepmind/ganeval-cifar10-convnet/1" #@param {type:"string"}
+IMAGE_SHAPE = (32, 32)
+classifier = KerasClassifier(model=tf.keras.Sequential([hub.KerasLayer(classifier_url, input_shape=IMAGE_SHAPE+(3,))]), clip_values=(min_, max_))
 
 
-# Step 3: Create ART classifier
-classifier = KerasClassifier(model=model, clip_values=(min_, max_))
-classifier.fit(x_train, y_train, nb_epochs=10, batch_size=128)
 
-
-# Step 4: Evaluate the ART classifier on benign test examples
+# Step 3: Evaluate the victim model on the benign dataset
 predictions = classifier.predict(x_test)
 accuracy_benign = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-#print("Accuracy on benign test examples: {}%".format(accuracy_benign * 100))
+#print("Accuracy on benign test examples: {}%\n".format(accuracy_benign * 100))
 
 
-# Step 5: Collect 10 instances of each case from test examples
+
+# Step 4: Collect 10 instances of each case from test examples
 def exract_ten_classes( data, labels, classes=(0,1,2,3,4,5,6,7,8,9), no_instance=10 ):
     x_pre = []
     y_pre = []
@@ -86,7 +60,7 @@ print("x_test_adv_pre shape: " + str(x_test_adv_pre.shape) + "\n" + "x_test_adv_
       "y_test_adv_pre shape: " + str(y_test_adv.shape) + "\n" + "y_test_adv_pre size: " + str(y_test_adv.size) + "\n")
 
 
-# Step 6: Generate adversarial test examples and Evaluate the ART classifier on adversarial test examples
+# Step 5: Generate adversarial test examples and Evaluate the ART classifier on adversarial test examples
 attack_eps_5 = FastGradientMethod(classifier=classifier, eps=0.05)
 x_test_adv_eps_5 = attack_eps_5.generate(x=x_test_adv_pre)
 predictions_eps_5 = classifier.predict(x_test_adv_eps_5)
@@ -114,7 +88,7 @@ accuracy_adv_eps_95 = np.sum(np.argmax(predictions_eps_95, axis=1) == np.argmax(
 accuracies = [accuracy_adv_eps_5 * 100, accuracy_adv_eps_10 * 100, accuracy_adv_eps_50 * 100, accuracy_adv_eps_95 * 100]
 
 
-# Step 7: Plot Results
+# Step 6: Plot Results
 for ind in range(0, 100, 5):
     fig = plt.figure(figsize=(16, 16))
     fig.suptitle('Adversarial Attack On Victim Model', fontsize=24, fontweight='bold')
@@ -180,7 +154,7 @@ for ind in range(0, 100, 5):
     plt.show()
 
 
-# Step 9: Data from Results
+# Step 7: Data from Results
 print()
 print("Accuracy on benign test examples: {}%".format(accuracy_benign * 100))
 print("Accuracy on adversarial test examples with eps = 0.05: {}%".format(accuracies[0]))

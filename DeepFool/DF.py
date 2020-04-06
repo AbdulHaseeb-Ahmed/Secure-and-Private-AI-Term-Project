@@ -1,9 +1,11 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
-import keras
+
+import logging
+
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Activation, Dropout
 import numpy as np
-import logging
+
 from art.attacks import DeepFool
 from art.classifiers import KerasClassifier
 from art.utils import load_dataset
@@ -16,13 +18,14 @@ formatter = logging.Formatter("[%(levelname)s] %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-# Step 1: Load the CIFAR 10 dataset
+# Read CIFAR10 dataset
 (x_train, y_train), (x_test, y_test), min_, max_ = load_dataset(str("cifar10"))
 x_train, y_train = x_train[:5000], y_train[:5000]
 x_test, y_test = x_test[:500], y_test[:500]
 im_shape = x_train[0].shape
 
-# Step 2: Create the model
+# Create Keras convolutional neural network - basic architecture from Keras examples
+# Source here: https://github.com/keras-team/keras/blob/master/examples/cifar10_cnn.py
 model = Sequential()
 model.add(Conv2D(32, (3, 3), padding="same", input_shape=x_train.shape[1:]))
 model.add(Activation("relu"))
@@ -47,20 +50,9 @@ model.add(Activation("softmax"))
 
 model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
-# Step 3: Create classifier wrapper
+# Create classifier wrapper
 classifier = KerasClassifier(model=model, clip_values=(min_, max_))
 classifier.fit(x_train, y_train, nb_epochs=10, batch_size=128)
-
-
-# Step 4: Evaluate the ART classifier on benign test examples
-# Score trained model.
-scores = model.evaluate(x_test, y_test, verbose=1)
-print('Test loss:', scores[0])
-print('Test accuracy:', scores[1])
-
-predictions = classifier.predict(x_test)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("Accuracy on benign test examples: {}%".format(accuracy * 100))
 
 # Craft adversarial samples with DeepFool
 logger.info("Create DeepFool attack")
